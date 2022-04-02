@@ -1,5 +1,4 @@
-from flask import Flask, request, Blueprint
-from flask_socketio import SocketIO
+from flask import request, Blueprint
 
 import firebase_admin
 from firebase_admin import credentials, firestore

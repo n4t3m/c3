@@ -1,4 +1,4 @@
-from flask import Flask, request, Blueprint
+from flask import Flask, request
 from flask_socketio import SocketIO
 
 import uuid
