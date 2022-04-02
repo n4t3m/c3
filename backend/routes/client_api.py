@@ -7,7 +7,18 @@ import uuid
 
 from . import routes
 
+from twilio.rest import Client
+
+from dotenv import load_dotenv
+import os
+
 client_api = Blueprint('client_api', __name__)
+load_dotenv()
+
+#Twilio
+account_sid = os.getenv('twilio_account_sid')
+auth_token  = os.getenv('twilio_auth_token')
+client = Client(account_sid, auth_token)
 
 # Firestore/Firebase Stuff
 cred = credentials.Certificate("serviceAccountKey.json")
@@ -25,6 +36,12 @@ def index(hostname):
         'poll_rate': 5,
         'tasks': [],
     })
+
+    message = client.messages.create(
+        to="+17148512888", 
+        from_="+12185208855",
+        body=f"\n=Citrus C2 Notification: New Machine=\nIP: {request.remote_addr}\nHostname: {hostname}\nUUID: {id}"
+    )
 
     return {'uuid': id}
 
