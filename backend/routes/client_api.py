@@ -6,7 +6,7 @@ from . import routes
 
 client_api = Blueprint('client_api', __name__)
 
-#Firestore/Firebase Stuff
+# Firestore/Firebase Stuff
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
@@ -29,16 +29,21 @@ def index(hostname):
 
 @routes.route('/bot/poll', methods=['GET'])
 def poll():
-    machine = db.collection('machines').where(
+    machines = db.collection('machines').where(
         'uuid', '==', request.headers.get('uuid')).limit(1).get()
 
-    if not machine:
+    if not machines:
         return {'Error': 'No machines found'}
 
-    if machine[0].to_dict()['tasks']:
-        return {'task': machine[0].to_dict()['tasks'][0]}
+    machine = machines[0]
+    tasks = machine.to_dict()['tasks']
 
-    return ('', 418)
+    if tasks:
+        task = tasks.pop(0)
+        machine.reference.update({'tasks': tasks})
+        return {'task': task}
+
+    return ({'task': None}, 418)
 
 
 @routes.route('/bot/out')
