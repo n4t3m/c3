@@ -4,6 +4,3 @@
 [submodule "client/external/rapidjson"]
 	path = client/external/rapidjson
 	url = https://github.com/Tencent/rapidjson.git
-[submodule "client/external/curlpp"]
-	path = client/external/curlpp
-	url = https://github.com/jpbarrette/curlpp.git
