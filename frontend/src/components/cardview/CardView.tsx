@@ -77,6 +77,8 @@ export default function CardView({
 		console.log('hist:', hist);
 	});
 
+	useEffect(() => {}, [l]);
+
 	useEffect(() => {
 		console.log('CardView loaded', JSON.stringify(m), 'getting history');
 	}, []);
@@ -97,11 +99,14 @@ export default function CardView({
 				</DialogTitle>
 				<DialogContent dividers={true}>
 					<List>
-						{diagType === 'h' ? (
+						{diagType === 'h' && hist !== undefined ? (
 							hist.map((h: any) => {
-								<>
-									<h1>h.cmd_output</h1>
-								</>;
+								return (
+									<>
+										{h.cmd_output}
+										<br />
+									</>
+								);
 							})
 						) : mach.tasks === undefined ||
 						  mach.tasks === null ||

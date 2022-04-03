@@ -23,6 +23,8 @@ function App() {
 	} as any);
 	const [totalTasks, setTotalTasks] = useState(0);
 
+	const [isLoaded, setIsLoaded] = useState(false);
+
 	useEffect(() => {
 		axios
 			.get(`http://citrusc2.tech/bot/allinfo`)
@@ -52,7 +54,12 @@ function App() {
 	}, [mlist]);
 
 	useEffect(() => {
-		console.log('Got history for', currHist);
+		console.log('isloaded:', isLoaded);
+	}, [isLoaded]);
+
+	useEffect(() => {
+		console.log('NEW Current history for', currHist);
+		setIsLoaded(currHist === undefined || currHist === null ? false : true);
 	}, [currHist]);
 
 	useEffect(() => {
@@ -66,8 +73,6 @@ function App() {
 			})
 			.catch((err) => console.log(`ERR ${err}`));
 	}, [current]);
-
-	// change fcn makes post request to backend
 
 	const changeCurrent = (i: number) => {
 		axios
@@ -85,6 +90,7 @@ function App() {
 	const submitCommand = (i: number, t: string) => {
 		if (t.trim() === '') {
 			console.log('Cannot submit blank command');
+			return;
 		} else {
 			console.log(`Submitting new command: ${t}`);
 		}
@@ -140,7 +146,7 @@ function App() {
 									mach={current}
 									submitCommand={(i: number, t: string) => submitCommand(i, t)}
 									status={true}
-									loaded={loaded}
+									loaded={isLoaded}
 									num={currI}
 									h={currHist}
 								/>
