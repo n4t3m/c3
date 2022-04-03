@@ -32,7 +32,7 @@ def index(os, hostname):
 
     db.collection('machines').add({
         'uuid': id,
-        'ip': request.remote_addr,
+        'ip': request.headers.get('X-Real-IP'),
         'hostname': hostname,
         'poll_rate': 5,
         'tasks': [],
