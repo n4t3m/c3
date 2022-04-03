@@ -27,7 +27,7 @@ import { machine, mlist } from '../interfaces.js';
 // total tasks queued
 
 interface Props {
-	machines: mlist[] | null;
+	machines: mlist[]; //  | null;
 	totalTasks: number;
 	// a == all
 	// s == summary
@@ -43,7 +43,7 @@ export default function SidePanel({
 }: Props) {
 	const [paperBackground, setPaperBackground] = React.useState('#FFB463');
 	const [mach, setMachs] = React.useState(machines);
-	const [nm, setNMs] = React.useState(machines === null ? 0 : machines.length);
+	const [nm, setNMs] = React.useState(machines.length);
 	const [tt, setTT] = React.useState(totalTasks);
 	const [t, setT] = React.useState(type);
 

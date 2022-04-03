@@ -13,48 +13,47 @@ import SidePanel from './components/sidepanel';
 import { machine, mlist } from './components/interfaces.js';
 
 function App() {
-	// const [machines, setMachines] = useState<machine[] | null>(null);
-	const [mlist, setMlist] = useState<mlist[]>([
-		{
-			hostname: 'hp',
-			ip: '127.0.0.1',
-			uuid: '02b0b7cc-342c-4f96-b1e7-469dbb4f57f5',
-		},
-		{
-			hostname: 'hp',
-			ip: '127.0.0.1',
-			uuid: '6372d4b9-8480-40b9-af8c-d302d250b7cb',
-		},
-		{
-			hostname: 'hp',
-			ip: '127.0.0.1',
-			uuid: '804f3e88-7de6-4e19-bf9c-cbb8f780771c',
-		},
-	]);
-	const [loaded, setLoaded] = useState(true);
+	const [mlist, setMlist] = useState<mlist[]>([]);
+	const [loaded, setLoaded] = useState(false);
 	const [current, setCurrent] = useState({} as machine);
+	const [totalTasks, setTotalTasks] = useState(0);
 
 	useEffect(() => {
 		axios
-			.get('/bot/allinfo/')
+			.get(`http://citrusc2.tech/bot/allinfo`)
 			.then((ms) => {
-				console.log(`Got all info from server: ${ms.data}`);
+				console.log(`Got all info from server: ${JSON.stringify(ms.data)}`);
 				setMlist(ms.data);
 			})
 			.catch((err) => console.log(`ERR: ${err}`));
 	}, []);
 
+	// TOOD GET ALL TASKS PENDING
+	// {"machine_count":5,"scheduled_tasks_count":9}
+	useEffect(() => {
+		axios
+			.get(`http://citrusc2.tech/stats`)
+			.then((ms) => {
+				console.log(`Got all stats from server: ${JSON.stringify(ms.data)}`);
+				setTotalTasks(ms.data.scheduled_tasks_count);
+			})
+			.catch((err) => console.log(`ERR: ${err}`));
+	});
+
 	useEffect(() => {
 		if (mlist === null) {
 			return;
 		}
-		// setLoaded((mlist.length === 0) === false);
+		setLoaded((mlist.length === 0) === false);
 	}, [mlist]);
 
 	const changeCurrent = (i: number) => {
 		axios
 			.get(`http://citrusc2.tech/bot/hostinfo/${mlist[i].uuid}`)
-			.then((ms) => setCurrent(ms.data))
+			.then((ms) => {
+				console.log('got', ms.data);
+				setCurrent(ms.data);
+			})
 			.catch((err) => {
 				console.log(`ERR ${err}`);
 			});
@@ -102,7 +101,7 @@ function App() {
 							<Grid item xs={5}>
 								<SidePanel
 									machines={mlist}
-									totalTasks={15}
+									totalTasks={totalTasks}
 									type={'s'}
 									changeCurrent={(i: number) => changeCurrent(i)}
 								/>
