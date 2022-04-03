@@ -17,6 +17,7 @@ function App() {
 	const [loaded, setLoaded] = useState(false);
 	const [current, setCurrent] = useState({} as machine);
 	const [currI, setCurrI] = useState(0);
+	const [currUUID, setCurrUUID] = useState('');
 	const [currHist, setCurrHist] = useState({
 		cmd_output: '',
 		timestamp: '',
@@ -94,6 +95,7 @@ function App() {
 				console.log('got', ms.data);
 				setCurrent(ms.data);
 				setCurrI(i);
+				setCurrUUID(ms.data.uuid);
 			})
 			.catch((err) => {
 				console.log(`ERR ${err}`);
@@ -129,6 +131,10 @@ function App() {
 				console.log(`ERR ${err}`);
 			});
 	};
+
+	useEffect(() => {
+		console.log('plz change uuid', currUUID);
+	});
 
 	return (
 		<>
@@ -168,6 +174,7 @@ function App() {
 										loaded={isLoaded}
 										num={currI}
 										h={currHist}
+										u={currUUID}
 									/>
 								)}
 							</Grid>

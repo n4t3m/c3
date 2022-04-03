@@ -31,6 +31,7 @@ interface Props {
 	loaded: boolean;
 	num: number;
 	h: any;
+	u: string;
 }
 
 export default function CardView({
@@ -40,6 +41,7 @@ export default function CardView({
 	loaded,
 	num,
 	h,
+	u,
 }: Props) {
 	const [m, setM] = useState(mach);
 	const [newcmd, setNewCmd] = useState<string>('');
@@ -54,6 +56,7 @@ export default function CardView({
 		cmd_output: '',
 		timestamp: '',
 	} as any);
+	const [uuid, setUUID] = useState(u);
 
 	const prChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setM({
@@ -79,6 +82,9 @@ export default function CardView({
 
 	useEffect(() => {}, [l]);
 
+	useEffect(() => {
+		console.log('uuid changed:', uuid);
+	}, [uuid]);
 	// useEffect(() => {
 	// 	console.log('CardView loaded', JSON.stringify(m), 'getting history');
 	// }, []);
