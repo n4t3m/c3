@@ -66,7 +66,7 @@ function App() {
 		console.log('curr:', current);
 		if (current === undefined) return;
 		axios
-			.get(`http://citrusc2.tech/bot/hostcmdhist/${current.uuid}`)
+			.get(`http://34.121.3.180:5000/bot/hostcmdhist/${current.uuid}`)
 			.then((ms) => {
 				console.log('curr defined', current, ms.data.history);
 				setCurrHist(ms.data.history);
@@ -79,7 +79,7 @@ function App() {
 		if (current === undefined) return;
 
 		axios
-			.get(`http://citrusc2.tech/bot/hostcmdhist/${current.uuid}`)
+			.get(`http://34.121.3.180:5000/bot/hostcmdhist/${current.uuid}`)
 			.then((ms) => {
 				console.log('curr defined', current, ms.data.history);
 				setCurrHist(ms.data.history);
