@@ -3,9 +3,8 @@ use std::{collections::HashMap, sync::Arc};
 use axum::{
     extract::{
         ws::{Message, WebSocket, WebSocketUpgrade},
-        Extension,
+        Extension, Form,
     },
-    http::HeaderMap,
     response::IntoResponse,
     routing::{get, post},
     Router,
@@ -21,6 +20,11 @@ use tokio::sync::Mutex;
 use uuid::Uuid;
 
 type WsMap = Arc<Mutex<HashMap<String, SplitSink<WebSocket, Message>>>>;
+
+#[derive(serde_derive::Deserialize)]
+struct Output {
+    output: String,
+}
 
 #[tokio::main]
 async fn main() {
@@ -50,11 +54,9 @@ async fn handle_socket(socket: WebSocket, state: WsMap) {
     state.lock().await.remove(&uuid);
 }
 
-async fn handle_out(headers: HeaderMap, Extension(state): Extension<WsMap>) {
-    let output = headers.get("output").unwrap().to_str().unwrap().to_string();
-
+async fn handle_out(form: Form<Output>, Extension(state): Extension<WsMap>) {
     for (_, ws) in state.lock().await.iter_mut() {
-        if let Err(e) = ws.send(Message::Text(output.clone())).await {
+        if let Err(e) = ws.send(Message::Text(form.output.clone())).await {
             println!("Error: {}", e);
         }
     }
