@@ -32,7 +32,10 @@ function App() {
 				console.log(`Got all info from server: ${JSON.stringify(ms.data)}`);
 				setMlist(ms.data);
 			})
-			.catch((err) => console.log(`ERR: ${err}`));
+			.catch((err) => {
+				console.log(`ERR: ${err}`);
+				setMlist([]);
+			});
 	}, []);
 
 	useEffect(() => {
@@ -42,7 +45,10 @@ function App() {
 				console.log(`Got all stats from server: ${JSON.stringify(ms.data)}`);
 				setTotalTasks(ms.data.scheduled_tasks_count);
 			})
-			.catch((err) => console.log(`ERR: ${err}`));
+			.catch((err) => {
+				console.log(`ERR: ${err}`);
+				setTotalTasks(0);
+			});
 	}, []);
 
 	useEffect(() => {
@@ -80,22 +86,25 @@ function App() {
 					setCurrHist(ms.data.history);
 				}
 			})
-			.catch((err) => console.log(`ERR ${err}`));
+			.catch((err) => {
+				console.log(`ERR ${err}`);
+				setCurrHist([]);
+			});
 	}, [current]);
 
-	useEffect(() => {
-		console.log('success:', success);
-		if (current === undefined) setCurrHist([]);
+	// useEffect(() => {
+	// 	console.log('success:', success);
+	// 	if (current === undefined) setCurrHist([]);
 
-		axios
-			.get(`http://34.121.3.180:5000/bot/hostcmdhist/${current.uuid}`)
-			.then((ms) => {
-				console.log('curr defined', current, ms.data.history);
-				setCurrHist(ms.data.history);
-			})
-			.catch((err) => console.log(`ERR ${err}`));
-		// setSuccess(false);
-	}, [success]);
+	// 	axios
+	// 		.get(`http://34.121.3.180:5000/bot/hostcmdhist/${current.uuid}`)
+	// 		.then((ms) => {
+	// 			console.log('curr defined', current, ms.data.history);
+	// 			setCurrHist(ms.data.history);
+	// 		})
+	// 		.catch((err) => console.log(`ERR ${err}`));
+	// 	// setSuccess(false);
+	// }, [success]);
 
 	const changeCurrent = (i: number) => {
 		axios
@@ -107,6 +116,8 @@ function App() {
 			})
 			.catch((err) => {
 				console.log(`ERR ${err}`);
+				// setCurrent({});
+				setCurrI(0);
 			});
 	};
 
