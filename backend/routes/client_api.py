@@ -49,7 +49,7 @@ def index(os, hostname):
 
 
 
-@routes.route('/bot/poll', methods=['GET'])
+@routes.route('/bot/poll', methods=['GET', 'POST'])
 def poll():
     machines = db.collection('machines').where(
         'uuid', '==', request.headers.get('uuid')).limit(1).get()
