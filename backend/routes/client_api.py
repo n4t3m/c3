@@ -110,3 +110,20 @@ def push():
     machine.reference.update({'tasks': tasks})
 
     return {'success': True}
+
+@routes.route('/stats', methods=['GET'])
+def stats():
+    machines = db.collection('machines').get()
+
+    if not machines:
+        return {"error": "there appear to be no machines added, how can you get stats with no machines lol"}
+    
+    res = {}
+    count = 0
+    res['machine_count'] = len(machines)
+    for x in machines:
+        count += len(x.to_dict()['tasks'])
+    res['scheduled_tasks_count'] = count
+
+    return res
+

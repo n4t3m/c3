@@ -1,5 +1,6 @@
 from flask import Flask, request
 from flask_socketio import SocketIO
+from flask_cors import CORS
 
 import uuid
 
@@ -8,6 +9,7 @@ from routes import *
 
 
 app = Flask(__name__)
+cors = CORS(app)
 app.register_blueprint(routes)
 
 socketio = SocketIO(app)
