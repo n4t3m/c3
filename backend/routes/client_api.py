@@ -149,7 +149,7 @@ def cmdoutput(input_encoding):
     r = requests.post('http://citrusc2.tech/out', data={'output': message, 'uuid': request.headers['Uuid']})
 
 
-    machines = db.collection('machines').where(
+    machines = db.collection('cmd_hist').where(
         'uuid', '==', request.headers.get('Uuid')).limit(1).get()
 
     presentDate = datetime.datetime.now()
