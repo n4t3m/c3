@@ -2,10 +2,10 @@ export interface machine {
 	hostname: string;
 	ip: string;
 	os: 'linux' | 'Windows';
-	cmdQueue: string[];
-	output: [{ cmd: string; output: string; timestamp: string }];
-	pollRate: number;
-	UUID: string;
+	tasks: string[];
+	output?: [{ cmd: string; output: string; timestamp: string }];
+	poll_rate: number;
+	uuid: string;
 	status: boolean;
 }
 

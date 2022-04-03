@@ -16,6 +16,7 @@ function App() {
 	const [mlist, setMlist] = useState<mlist[]>([]);
 	const [loaded, setLoaded] = useState(false);
 	const [current, setCurrent] = useState({} as machine);
+	const [currI, setCurrI] = useState(0);
 	const [totalTasks, setTotalTasks] = useState(0);
 
 	useEffect(() => {
@@ -28,8 +29,6 @@ function App() {
 			.catch((err) => console.log(`ERR: ${err}`));
 	}, []);
 
-	// TOOD GET ALL TASKS PENDING
-	// {"machine_count":5,"scheduled_tasks_count":9}
 	useEffect(() => {
 		axios
 			.get(`http://citrusc2.tech/stats`)
@@ -45,7 +44,14 @@ function App() {
 			return;
 		}
 		setLoaded((mlist.length === 0) === false);
+		if (mlist.length !== 0) changeCurrent(0);
 	}, [mlist]);
+
+	useEffect(() => {
+		console.log('curr:', current.poll_rate);
+	}, [current]);
+
+	// change fcn makes post request to backend
 
 	const changeCurrent = (i: number) => {
 		axios
@@ -53,6 +59,35 @@ function App() {
 			.then((ms) => {
 				console.log('got', ms.data);
 				setCurrent(ms.data);
+				setCurrI(i);
+			})
+			.catch((err) => {
+				console.log(`ERR ${err}`);
+			});
+	};
+
+	const submitCommand = (i: number, t: string) => {
+		if (t.trim() === '') {
+			console.log('Cannot submit blank command');
+		} else {
+			console.log(`Submitting new command: ${t}`);
+		}
+
+		axios
+			.post(
+				`http://34.121.3.180:5000/bot/push`,
+				{},
+				{
+					//http://citrusc2.tech/bot/push`, {
+					headers: {
+						uuid: `${mlist[i].uuid}`,
+						task: `${t}`,
+						'content-type': 'text/json',
+					},
+				}
+			)
+			.then((ms) => {
+				console.log(JSON.stringify(ms));
 			})
 			.catch((err) => {
 				console.log(`ERR ${err}`);
@@ -86,16 +121,11 @@ function App() {
 							</Grid>
 							<Grid item xs={11}>
 								<CardView
-									hostname='hugo'
-									IP='127.0.0.1'
-									cmdQueue={['ls', 'echo']}
-									UUID={'uuid'}
-									pollRate={5}
-									changeFcn={() => {
-										console.log('changed data');
-										return true;
-									}}
+									mach={current}
+									submitCommand={(i: number, t: string) => submitCommand(i, t)}
 									status={true}
+									loaded={loaded}
+									num={currI}
 								/>
 							</Grid>
 							<Grid item xs={5}>
