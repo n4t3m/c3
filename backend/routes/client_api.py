@@ -101,12 +101,14 @@ def push():
         'uuid', '==', request.headers.get('uuid')).limit(1).get()
 
     if not machines:
+        print(dict(request.headers))
         return {'Error': 'No machines found'}
 
     machine = machines[0]
     tasks = machine.to_dict()['tasks']
 
     tasks.append(request.headers.get('task'))
+    print("Task Gotten: " + request.headers.get('task'))
     machine.reference.update({'tasks': tasks})
 
     return {'success': True}
