@@ -1,0 +1,6 @@
+[submodule "client/external/RSJp-cpp"]
+	path = client/external/RSJp-cpp
+	url = https://github.com/subh83/RSJp-cpp.git
+[submodule "client/external/rapidjson"]
+	path = client/external/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
