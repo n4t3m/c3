@@ -65,7 +65,7 @@ def poll():
     return ({'task': None}, 418)
 
 
-@routes.route('/bot/info/', methods=['GET'])
+@routes.route('/bot/allinfo/', methods=['GET'])
 def info():
     machines = db.collection('machines').get()
 
@@ -76,6 +76,7 @@ def info():
         tmp = {}
         tmp['hostname'] = x.to_dict()['hostname']
         tmp['uuid']=x.to_dict()['uuid']
+        tmp['ip']=x.to_dict()['ip']
         res.append(tmp)
     return jsonify(res)
 
