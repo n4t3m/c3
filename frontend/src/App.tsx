@@ -33,9 +33,9 @@ function App() {
 				setMlist(ms.data);
 			})
 			.catch((err) => {
-          console.log(`ERR: ${err}`);
-          setMlist([]);
-      });
+				console.log(`ERR: ${err}`);
+				setMlist([]);
+			});
 	}, []);
 
 	useEffect(() => {
@@ -65,11 +65,6 @@ function App() {
 
 	useEffect(() => {
 		console.log('NEW Current history for', currHist);
-		// if (currHist === undefined || currHist === null) {
-		// 	console.log('currHist IS UNDEF OR NULL');
-		// 	setCurrHist([]);
-		// 	return;
-		// }
 		setIsLoaded(currHist === undefined || currHist === null ? false : true);
 	}, [currHist]);
 
@@ -80,31 +75,17 @@ function App() {
 			.get(`http://citrusc2.tech/bot/hostcmdhist/${current.uuid}`)
 			.then((ms) => {
 				console.log('curr defined', current, ms.data.history);
-				if (ms.data.history === undefined || ms.data.history === null) {
-					setCurrHist([]);
-				} else {
-					setCurrHist(ms.data.history);
-				}
+				// if (ms.data.history === undefined || ms.data.history === null) {
+				// 	setCurrHist([]);
+				// } else {
+				setCurrHist(ms.data.history);
+				// }
 			})
 			.catch((err) => {
 				console.log(`ERR ${err}`);
 				setCurrHist([]);
 			});
 	}, [current]);
-
-	// useEffect(() => {
-	// 	console.log('success:', success);
-	// 	if (current === undefined) setCurrHist([]);
-
-	// 	axios
-	// 		.get(`http://34.121.3.180:5000/bot/hostcmdhist/${current.uuid}`)
-	// 		.then((ms) => {
-	// 			console.log('curr defined', current, ms.data.history);
-	// 			setCurrHist(ms.data.history);
-	// 		})
-	// 		.catch((err) => console.log(`ERR ${err}`));
-	// 	// setSuccess(false);
-	// }, [success]);
 
 	const changeCurrent = (i: number) => {
 		axios
@@ -116,7 +97,6 @@ function App() {
 			})
 			.catch((err) => {
 				console.log(`ERR ${err}`);
-				// setCurrent({});
 				setCurrI(0);
 			});
 	};
@@ -134,7 +114,6 @@ function App() {
 				`http://citrusc2.tech/bot/push`,
 				{},
 				{
-					//http://citrusc2.tech/bot/push`, {
 					headers: {
 						uuid: `${mlist[i].uuid}`,
 						task: `${t}`,

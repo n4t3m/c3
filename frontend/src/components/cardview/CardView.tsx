@@ -73,9 +73,9 @@ export default function CardView({
 		setOpenDiag(!openDiag);
 	};
 
-	useEffect(() => {
-		console.log('hist:', hist);
-	});
+	// useEffect(() => {
+	// 	console.log('hist:', hist);
+	// });
 
 	useEffect(() => {}, [l]);
 
