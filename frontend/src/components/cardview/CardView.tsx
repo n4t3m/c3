@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -21,6 +22,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 
+import curM from './App.js'
 // TODO
 // drag commands in queue to reorder
 // add loading bars for `submit command`
@@ -32,7 +34,7 @@ interface Props {
 	cmdQueue: string[];
 	UUID: string;
 	pollRate: number;
-	changeFcn: () => boolean;
+	changeFcn: (obj: curM) => boolean;
 	status: boolean;
 }
 
@@ -66,6 +68,8 @@ export default function CardView({
 			console.log(`Submitting new command: ${newcmd}`);
 		}
 	};
+
+	useEffect(() => { changeFcn({}, [newcmd])
 
 	// axios.get(/bot/info/uuid)
 
