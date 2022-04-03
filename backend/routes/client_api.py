@@ -27,7 +27,7 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 @routes.route('/bot/register/<string:os>/<string:hostname>', methods=['POST'])
-def index(hostname):
+def index(os, hostname):
     id = str(uuid.uuid4())
 
     db.collection('machines').add({
