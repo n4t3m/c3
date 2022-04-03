@@ -101,7 +101,7 @@ def push():
         'uuid', '==', request.headers.get('uuid')).limit(1).get()
 
     if not machines:
-        print("Backend UUID Gotten: " + dict(request.headers))
+        print(dict(request.headers))
         return {'Error': 'No machines found'}
 
     machine = machines[0]
