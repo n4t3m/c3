@@ -69,8 +69,8 @@ export default function SidePanel({
 									) : (
 										machines.map((m, i) => (
 											<>
-												<ListItem alignItems='center'>
-													<Button onClick={() => changeCurrent(i)}>
+												<ListItem alignItems='center' key={`${m.hostname}${i}`}>
+													<Button onClick={() => changeCurrent(i)} fullWidth>
 														<ListItemText
 															primary={m.hostname}
 															secondary={m.ip}
