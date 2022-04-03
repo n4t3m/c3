@@ -22,7 +22,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 
-import curM from './App.js'
+// import curM from '../../App';
 // TODO
 // drag commands in queue to reorder
 // add loading bars for `submit command`
@@ -34,7 +34,7 @@ interface Props {
 	cmdQueue: string[];
 	UUID: string;
 	pollRate: number;
-	changeFcn: (obj: curM) => boolean;
+	changeFcn: (obj: any) => boolean;
 	status: boolean;
 }
 
@@ -69,7 +69,7 @@ export default function CardView({
 		}
 	};
 
-	useEffect(() => { changeFcn({}, [newcmd])
+	// useEffect(() => { changeFcn({}, [newcmd])
 
 	// axios.get(/bot/info/uuid)
 
