@@ -5,11 +5,15 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
 export default function Header() {
+	const [back, setBack] = React.useState('#FFB463');
+
 	return (
 		<Box sx={{ flexGrow: 1 }}>
 			<AppBar
 				position='static'
-				sx={{ background: '#eba834', alignItems: 'center' }}
+				sx={{ background: `${back}`, alignItems: 'center' }}
+				onMouseEnter={() => setBack('#FFB463')}
+				onMouseLeave={() => setBack('#FFC500')}
 			>
 				<Toolbar>
 					<Typography variant='h5'>

