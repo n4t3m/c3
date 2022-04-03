@@ -1,7 +1,7 @@
 export interface machine {
 	hostname: string;
 	ip: string;
-	os: 'Linux' | 'Windows';
+	os: 'linux' | 'Windows';
 	cmdQueue: string[];
 	output: [{ cmd: string; output: string; timestamp: string }];
 	pollRate: number;
