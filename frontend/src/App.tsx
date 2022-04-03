@@ -8,6 +8,7 @@ import Container from '@mui/material/Container';
 
 function App() {
 	// const [machines, setMachines] = React.useState<string[]>('');
+	// const [current, setCurrent] = ...
 
 	// useEffect(() => {
 	// 	axios.get('/bot/info').then((ms) => {
@@ -17,12 +18,14 @@ function App() {
 
 	return (
 		<>
-			<Header />
 			<Container maxWidth={false}>
+				<Header />
+				<br />
 				<Container maxWidth='sm'>
 					{/* {machines.map((m) => {
 					CardView(m.asdasdasd);
 				})} */}
+					{/* <Grid></Grid> */}
 					<CardView
 						hostname='hugo'
 						IP='127.0.0.1'
