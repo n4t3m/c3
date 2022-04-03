@@ -22,7 +22,6 @@ function App() {
 		timestamp: '',
 	} as any);
 	const [totalTasks, setTotalTasks] = useState(0);
-
 	const [isLoaded, setIsLoaded] = useState(false);
 
 	useEffect(() => {
@@ -43,7 +42,7 @@ function App() {
 				setTotalTasks(ms.data.scheduled_tasks_count);
 			})
 			.catch((err) => console.log(`ERR: ${err}`));
-	});
+	}, []);
 
 	useEffect(() => {
 		if (mlist === null) {
@@ -142,14 +141,20 @@ function App() {
 								/>
 							</Grid>
 							<Grid item xs={11}>
-								<CardView
-									mach={current}
-									submitCommand={(i: number, t: string) => submitCommand(i, t)}
-									status={true}
-									loaded={isLoaded}
-									num={currI}
-									h={currHist}
-								/>
+								{isLoaded === false ? (
+									<></>
+								) : (
+									<CardView
+										mach={current}
+										submitCommand={(i: number, t: string) =>
+											submitCommand(i, t)
+										}
+										status={true}
+										loaded={isLoaded}
+										num={currI}
+										h={currHist}
+									/>
+								)}
 							</Grid>
 							<Grid item xs={5}>
 								<SidePanel

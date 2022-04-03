@@ -99,7 +99,7 @@ export default function CardView({
 				</DialogTitle>
 				<DialogContent dividers={true}>
 					<List>
-						{diagType === 'h' && hist !== undefined ? (
+						{diagType === 'h' && hist !== undefined && hist !== null ? (
 							hist.map((h: any) => {
 								return (
 									<>
