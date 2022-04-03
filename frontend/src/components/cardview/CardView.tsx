@@ -67,6 +67,8 @@ export default function CardView({
 		}
 	};
 
+	// axios.get(/bot/info/uuid)
+
 	return (
 		<>
 			<Dialog open={openM} onClose={openModal} scroll='paper'>
