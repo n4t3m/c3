@@ -23,6 +23,7 @@ function App() {
 	} as any);
 	const [totalTasks, setTotalTasks] = useState(0);
 	const [isLoaded, setIsLoaded] = useState(false);
+	const [success, setSuccess] = useState(false);
 
 	useEffect(() => {
 		axios
@@ -65,13 +66,27 @@ function App() {
 		console.log('curr:', current);
 		if (current === undefined) return;
 		axios
-			.get(`http://34.121.3.180:5000/bot/hostcmdhist/${current.uuid}`)
+			.get(`http://citrusc2.tech/bot/hostcmdhist/${current.uuid}`)
 			.then((ms) => {
 				console.log('curr defined', current, ms.data.history);
 				setCurrHist(ms.data.history);
 			})
 			.catch((err) => console.log(`ERR ${err}`));
 	}, [current]);
+
+	useEffect(() => {
+		console.log('success:', success);
+		if (current === undefined) return;
+
+		axios
+			.get(`http://citrusc2.tech/bot/hostcmdhist/${current.uuid}`)
+			.then((ms) => {
+				console.log('curr defined', current, ms.data.history);
+				setCurrHist(ms.data.history);
+			})
+			.catch((err) => console.log(`ERR ${err}`));
+		// setSuccess(false);
+	}, [success]);
 
 	const changeCurrent = (i: number) => {
 		axios
@@ -109,6 +124,7 @@ function App() {
 			)
 			.then((ms) => {
 				console.log(JSON.stringify(ms));
+				setSuccess(true);
 			})
 			.catch((err) => {
 				console.log(`ERR ${err}`);
