@@ -65,7 +65,7 @@ def poll():
     return ({'task': None}, 418)
 
 
-@routes.route('/bot/info', methods=['GET'])
+@routes.route('/bot/info/', methods=['GET'])
 def info():
     machines = db.collection('machines').get()
 
@@ -78,6 +78,17 @@ def info():
         tmp['uuid']=x.to_dict()['uuid']
         res.append(tmp)
     return jsonify(res)
+
+
+@routes.route('/bot/hostinfo/<string:input_uuid>', methods=['GET'])
+def hostinfo(input_uuid):
+    machines = db.collection('machines').where('uuid', '==', input_uuid).limit(1).get()
+    if not machines:
+        return {'Error': 'No machines found'} #a57a2176-1447-4311-a94b-8c9235ea580f
+    machine = machines[0]
+    return machine.to_dict()
+
+
 
 @routes.route('/bot/push', methods=['POST'])
 def push():
