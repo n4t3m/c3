@@ -33,9 +33,9 @@ function App() {
 				setMlist(ms.data);
 			})
 			.catch((err) => {
-				console.log(`ERR: ${err}`);
-				setMlist([]);
-			});
+          console.log(`ERR: ${err}`);
+          setMlist([]);
+      });
 	}, []);
 
 	useEffect(() => {
