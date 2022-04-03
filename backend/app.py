@@ -2,6 +2,7 @@ from flask import Flask, request
 from flask_socketio import SocketIO
 from flask_cors import CORS
 
+import requests
 import uuid
 
 from routes import client_api
@@ -19,13 +20,20 @@ def hello_world():
     return "<p>Hello, World!</p>"
 
 
-@app.route('/bot/out', methods=['POST'])
-def out():
-    f = request.files['output'].read()
+@app.route('/cmdout', methods=['POST']) 
+def cmdoutput():
+    output = list(request.form.keys())[0]
+    r = requests.post('http://localhost/out', data={'output': output})
+    return output
 
-    socketio.emit('out', f, broadcast=True)
 
-    return ('', 200)
+# @app.route('/bot/out', methods=['POST'])
+# def out():
+#     f = request.files['output'].read()
+
+#     socketio.emit('out', f, broadcast=True)
+
+#     return ('', 200)
 
 # @socketio.on('message')
 # def handle_message(data):
