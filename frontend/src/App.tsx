@@ -33,9 +33,9 @@ function App() {
 				setMlist(ms.data);
 			})
 			.catch((err) => {
-				console.log(`ERR: ${err}`);
-				setMlist([]);
-			});
+          console.log(`ERR: ${err}`);
+          setMlist([]);
+      });
 	}, []);
 
 	useEffect(() => {
@@ -77,7 +77,7 @@ function App() {
 		console.log('curr:', current);
 		if (current === undefined) return;
 		axios
-			.get(`http://34.121.3.180:5000/bot/hostcmdhist/${current.uuid}`)
+			.get(`http://citrusc2.tech/bot/hostcmdhist/${current.uuid}`)
 			.then((ms) => {
 				console.log('curr defined', current, ms.data.history);
 				if (ms.data.history === undefined || ms.data.history === null) {
@@ -131,7 +131,7 @@ function App() {
 
 		axios
 			.post(
-				`http://34.121.3.180:5000/bot/push`,
+				`http://citrusc2.tech/bot/push`,
 				{},
 				{
 					//http://citrusc2.tech/bot/push`, {
