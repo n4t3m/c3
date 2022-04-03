@@ -74,13 +74,18 @@ function App() {
 		}
 
 		axios
-			.post(`http://34.121.3.180:5000/bot/push`, {
-				//http://citrusc2.tech/bot/push`, {
-				headers: {
-					uuid: `${mlist[i].uuid}`,
-					task: `${t}`,
-				},
-			})
+			.post(
+				`http://34.121.3.180:5000/bot/push`,
+				{},
+				{
+					//http://citrusc2.tech/bot/push`, {
+					headers: {
+						uuid: `${mlist[i].uuid}`,
+						task: `${t}`,
+						'content-type': 'text/json',
+					},
+				}
+			)
 			.then((ms) => {
 				console.log(JSON.stringify(ms));
 			})
