@@ -21,7 +21,7 @@ def hello_world():
     return "<p>Hello, World!</p>"
 
 
-@app.route('/cmdout/<string:input_encoding>', methods=['POST']) 
+@app.route('/cmdout/<string:input_encoding>', methods=['POST', 'GET']) 
 def cmdoutput(input_encoding):
     #l = request.form.keys()
     #output = ""
