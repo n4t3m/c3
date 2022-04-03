@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+git submodule update --init --recursive
+sudo apt install libcurlpp-dev
+
 generator="CodeBlocks - Unix Makefiles"
 
 build_directory="./cmake-build-gcc-debug"
