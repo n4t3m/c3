@@ -233,7 +233,7 @@ void client_work() {
         //curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, bytes.size());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, nullptr);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, 0);
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, post_header_list);
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, get_header_list);
 
         //curl_easy_setopt(curl, CURLOPT_READDATA, &bytes);
         //curl_easy_setopt(curl, CURLOPT_READFUNCTION, &read_callback);
