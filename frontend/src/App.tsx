@@ -17,6 +17,10 @@ function App() {
 	const [loaded, setLoaded] = useState(false);
 	const [current, setCurrent] = useState({} as machine);
 	const [currI, setCurrI] = useState(0);
+	const [currHist, setCurrHist] = useState({
+		cmd_output: '',
+		timestamp: '',
+	} as any);
 	const [totalTasks, setTotalTasks] = useState(0);
 
 	useEffect(() => {
@@ -48,7 +52,19 @@ function App() {
 	}, [mlist]);
 
 	useEffect(() => {
-		console.log('curr:', current.poll_rate);
+		console.log('Got history for', currHist);
+	}, [currHist]);
+
+	useEffect(() => {
+		console.log('curr:', current);
+		if (current === undefined) return;
+		axios
+			.get(`http://34.121.3.180:5000/bot/hostcmdhist/${current.uuid}`)
+			.then((ms) => {
+				console.log('curr defined', current, ms.data.history);
+				setCurrHist(ms.data.history);
+			})
+			.catch((err) => console.log(`ERR ${err}`));
 	}, [current]);
 
 	// change fcn makes post request to backend
@@ -126,6 +142,7 @@ function App() {
 									status={true}
 									loaded={loaded}
 									num={currI}
+									h={currHist}
 								/>
 							</Grid>
 							<Grid item xs={5}>

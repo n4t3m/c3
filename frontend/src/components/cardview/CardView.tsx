@@ -24,29 +24,14 @@ import axios from 'axios';
 
 import { machine } from '../interfaces.js';
 
-// import curM from '../../App';
-// TODO
-// drag commands in queue to reorder
-// add loading bars for `submit command`
-// post for updating poll rate
-
 interface Props {
-	// hostname: string;
-	// IP: string;
-	// cmdQueue: string[];
-	// UUID: string;
-	// poll_rate: number;
-	// changeFcn: (obj: any) => boolean;
-	// status: boolean;
-	// loaded: boolean;
 	mach: machine;
 	submitCommand: (i: number, t: string) => void;
 	status: boolean;
 	loaded: boolean;
 	num: number;
+	h: any;
 }
-
-// https://stackoverflow.com/questions/45578844/how-to-set-header-and-options-in-axios
 
 export default function CardView({
 	mach,
@@ -54,15 +39,15 @@ export default function CardView({
 	status,
 	loaded,
 	num,
+	h,
 }: Props) {
 	const [m, setM] = useState(mach);
 	const [newcmd, setNewCmd] = useState<string>('');
-	const [hist, setHist] = useState({
-		cmd_output: '',
-		timestamp: '',
-	} as any);
-	const [openM, setOpenM] = useState<boolean>(false);
-	const [openH, setOpenH] = useState<boolean>(false);
+	const [hist, setHist] = useState(h);
+	const [openDiag, setOpenDiag] = useState(false);
+	// h === history
+	// c == command queue
+	const [diagType, setDiagType] = useState<'h' | 'c'>('c');
 	const [l, setL] = useState(loaded);
 	const [paperBackground, setPaperBackground] = useState('#FFB463');
 
@@ -79,22 +64,21 @@ export default function CardView({
 	};
 
 	const openModal = () => {
-		setOpenM(!openM);
+		setDiagType('c');
+		setOpenDiag(!openDiag);
 	};
 
 	const openHistory = () => {
-		setOpenH(!openH);
+		setDiagType('h');
+		setOpenDiag(!openDiag);
 	};
 
 	useEffect(() => {
+		console.log('hist:', hist);
+	});
+
+	useEffect(() => {
 		console.log('CardView loaded', JSON.stringify(m), 'getting history');
-		axios
-			.get(`http://34.121.3.180:5000/bot/hostcmdhist/${m.uuid}`)
-			.then((ms) => {
-				console.log(ms.data.history);
-				setHist(ms.data.history);
-			})
-			.catch((err) => console.log(`ERR ${err}`));
 	}, []);
 
 	return l === false ? (
@@ -103,15 +87,21 @@ export default function CardView({
 		</>
 	) : (
 		<>
-			<Dialog open={openM} onClose={openModal} scroll='paper'>
+			<Dialog
+				open={openDiag}
+				onClose={() => setOpenDiag(!openDiag)}
+				scroll='paper'
+			>
 				<DialogTitle>
-					{openH === true ? 'Command History' : 'Current Command Queue'}
+					{diagType === 'h' ? 'Command History' : 'Current Command Queue'}
 				</DialogTitle>
 				<DialogContent dividers={true}>
 					<List>
-						{openH === true ? (
+						{diagType === 'h' ? (
 							hist.map((h: any) => {
-								<h1>h.cmd_output</h1>;
+								<>
+									<h1>h.cmd_output</h1>
+								</>;
 							})
 						) : mach.tasks === undefined ||
 						  mach.tasks === null ||
@@ -131,11 +121,7 @@ export default function CardView({
 					</List>
 				</DialogContent>
 				<DialogActions>
-					<Button
-						onClick={openH === true ? () => openHistory() : () => openModal()}
-					>
-						Close
-					</Button>
+					<Button onClick={() => setOpenDiag(!openDiag)}>Close</Button>
 				</DialogActions>
 			</Dialog>
 
