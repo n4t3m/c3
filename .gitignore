@@ -1,3 +1,8 @@
+# python
 env
 __pycache__
 serviceAccountKey.json
+.env
+
+# rust
+target

