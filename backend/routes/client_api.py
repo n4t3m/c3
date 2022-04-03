@@ -98,7 +98,7 @@ def hostinfo(input_uuid):
     return machine.to_dict()
 
 @routes.route('/bot/hostcmdhist/<string:input_uuid>', methods=['GET'])
-def hostinfo(input_uuid):
+def hostcmdinfo(input_uuid):
     machines = db.collection('cmd_hist').where('uuid', '==', input_uuid).limit(1).get()
     if not machines:
         return {'Error': 'No machines found'} #a57a2176-1447-4311-a94b-8c9235ea580f
