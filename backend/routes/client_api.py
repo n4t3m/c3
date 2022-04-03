@@ -4,7 +4,9 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 import uuid
-from datetime import datetime
+import base64
+import time
+import datetime
 
 from . import routes
 import requests
@@ -148,15 +150,24 @@ def cmdoutput(input_encoding):
 
     machines = db.collection('machines').where(
         'uuid', '==', request.headers.get('Uuid')).limit(1).get()
+
+    presentDate = datetime.datetime.now()
+    unix_timestamp = datetime.datetime.timestamp(presentDate)*1000
     
     if not machines:
         db.collection('cmd_hist').add({
             'uuid': request.headers['Uuid'],
-            'history': [message]
+            'history': [{
+                "cmd_output": message,
+                "timestamp": unix_timestamp
+            }]
         })
     else:
         machine = machines[0]
         history = machine.to_dict()['history']
-        history.append(message)
+        history.append({
+                "cmd_output": message,
+                "timestamp": unix_timestamp
+            })
         machine.reference.update({'history': history})
     return message
