@@ -12,6 +12,8 @@ add_executable(C2ITRUS internal/main.cpp)
 
 #add_subdirectory(external/curlpp)
 
+set(RAPIDJSON_BUILD_TESTS OFF)
+set(RAPIDJSON_BUILD_THIRTPARTY_GTEST OFF)
 add_subdirectory(external/rapidjson)
 target_include_directories(C2ITRUS PRIVATE external/rapidjson/include)
 target_link_libraries(C2ITRUS PRIVATE curl)
