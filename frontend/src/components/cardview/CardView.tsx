@@ -167,7 +167,11 @@ export default function CardView({
 								label={status === true ? 'Active!' : 'Inactive :('}
 							/>
 							<FormControlLabel disabled control={<Checkbox />} label='NUKE' />
-							<FormControlLabel control={<Checkbox />} label='Reboot' />
+							<FormControlLabel
+								disabled
+								control={<Checkbox />}
+								label='Reboot'
+							/>
 
 							<Box sx={{ flexGrow: 1 }}>
 								<Grid container spacing={1}>

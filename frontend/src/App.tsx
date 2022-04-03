@@ -59,6 +59,11 @@ function App() {
 
 	useEffect(() => {
 		console.log('NEW Current history for', currHist);
+		// if (currHist === undefined || currHist === null) {
+		// 	console.log('currHist IS UNDEF OR NULL');
+		// 	setCurrHist([]);
+		// 	return;
+		// }
 		setIsLoaded(currHist === undefined || currHist === null ? false : true);
 	}, [currHist]);
 
@@ -69,14 +74,18 @@ function App() {
 			.get(`http://34.121.3.180:5000/bot/hostcmdhist/${current.uuid}`)
 			.then((ms) => {
 				console.log('curr defined', current, ms.data.history);
-				setCurrHist(ms.data.history);
+				if (ms.data.history === undefined || ms.data.history === null) {
+					setCurrHist([]);
+				} else {
+					setCurrHist(ms.data.history);
+				}
 			})
 			.catch((err) => console.log(`ERR ${err}`));
 	}, [current]);
 
 	useEffect(() => {
 		console.log('success:', success);
-		if (current === undefined) return;
+		if (current === undefined) setCurrHist([]);
 
 		axios
 			.get(`http://34.121.3.180:5000/bot/hostcmdhist/${current.uuid}`)
