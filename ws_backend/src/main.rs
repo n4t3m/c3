@@ -51,11 +51,13 @@ async fn handle_socket(socket: WebSocket, state: WsMap) {
 
 async fn handle_out(mut multipart: Multipart, Extension(state): Extension<WsMap>) {
     let mut output = String::new();
-
+    
     while let Some(field) = multipart.next_field().await.unwrap() {
-        let data = field.bytes().await.unwrap().to_vec();
-        let parsed_text = std::str::from_utf8(data.as_slice()).unwrap();
-        output.push_str(format!("{}{}", parsed_text, "\n").as_str());
+        let name = field.name().unwrap().to_string();
+        output.push_str(&name);
+        // let data = field.bytes().await.unwrap().to_vec();
+        // let parsed_text = std::str::from_utf8(data.as_slice()).unwrap();
+        // output.push_str(format!("{}{}", parsed_text, "\n").as_str());
     }
 
     for (_, ws) in state.lock().await.iter_mut() {
