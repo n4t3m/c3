@@ -3,8 +3,9 @@ use std::{collections::HashMap, sync::Arc};
 use axum::{
     extract::{
         ws::{Message, WebSocket, WebSocketUpgrade},
-        Extension, Multipart,
+        Extension,
     },
+    http::HeaderMap,
     response::IntoResponse,
     routing::{get, post},
     Router,
@@ -42,23 +43,15 @@ async fn handler(ws: WebSocketUpgrade, Extension(state): Extension<WsMap>) -> im
 
 async fn handle_socket(socket: WebSocket, state: WsMap) {
     let uuid = Uuid::new_v4().to_simple().to_string();
-    
+
     let (write, mut read) = socket.split();
     state.lock().await.insert(uuid.clone(), write);
     read.next().await;
     state.lock().await.remove(&uuid);
 }
 
-async fn handle_out(mut multipart: Multipart, Extension(state): Extension<WsMap>) {
-    let mut output = String::new();
-    
-    while let Some(field) = multipart.next_field().await.unwrap() {
-        let name = field.name().unwrap().to_string();
-        output.push_str(&name);
-        // let data = field.bytes().await.unwrap().to_vec();
-        // let parsed_text = std::str::from_utf8(data.as_slice()).unwrap();
-        // output.push_str(format!("{}{}", parsed_text, "\n").as_str());
-    }
+async fn handle_out(headers: HeaderMap, Extension(state): Extension<WsMap>) {
+    let output = headers.get("output").unwrap().to_str().unwrap().to_string();
 
     for (_, ws) in state.lock().await.iter_mut() {
         if let Err(e) = ws.send(Message::Text(output.clone())).await {
