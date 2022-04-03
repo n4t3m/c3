@@ -56,15 +56,17 @@ export default function CardView({
 	num,
 }: Props) {
 	const [m, setM] = useState(mach);
-	// const [pr, setPR] = useState<number>(mach.poll_rate);
-	// const [cq, setCQ] = useState<string[]>(mach.tasks);
 	const [newcmd, setNewCmd] = useState<string>('');
+	const [hist, setHist] = useState({
+		cmd_output: '',
+		timestamp: '',
+	} as any);
 	const [openM, setOpenM] = useState<boolean>(false);
+	const [openH, setOpenH] = useState<boolean>(false);
 	const [l, setL] = useState(loaded);
 	const [paperBackground, setPaperBackground] = useState('#FFB463');
 
 	const prChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		// setPR(event.target.value === '' ? pr : Number(event.target.value));
 		setM({
 			hostname: mach.hostname,
 			ip: mach.ip,
@@ -80,37 +82,19 @@ export default function CardView({
 		setOpenM(!openM);
 	};
 
-	// const submitCommand = () => {
-	// 	if (newcmd.trim() === '') {
-	// 		console.log('Cannot submit blank command');
-	// 	} else {
-	// 		console.log(`Submitting new command: ${newcmd}`);
-	// 		// const config = {
-	// 		// 	headers: {
-	// 		// 		uuid: `${UUID}`,
-	// 		//     task
-	// 		// 	},
-	// 		// };
-
-	// 		axios
-	// 			.post(`http://citrusc2.tech/bot/push`, {
-	// 				uuid: `${mach.UUID}`,
-	// 				task: `${newcmd}`,
-	// 			})
-	// 			.then((ms) => {
-	// 				console.log(JSON.stringify(ms));
-	// 			})
-	// 			.catch((err) => {
-	// 				console.log(`ERR ${err}`);
-	// 			});
-	// 	}
-	// };
+	const openHistory = () => {
+		setOpenH(!openH);
+	};
 
 	useEffect(() => {
-		// if (pr === undefined || pr === null) return;
-		// if (cq === undefined || cq === null) return;
-		// setL(true);
-		console.log('CardView loaded', JSON.stringify(m));
+		console.log('CardView loaded', JSON.stringify(m), 'getting history');
+		axios
+			.get(`http://34.121.3.180:5000/bot/hostcmdhist/${m.uuid}`)
+			.then((ms) => {
+				console.log(ms.data.history);
+				setHist(ms.data.history);
+			})
+			.catch((err) => console.log(`ERR ${err}`));
 	}, []);
 
 	return l === false ? (
@@ -120,13 +104,18 @@ export default function CardView({
 	) : (
 		<>
 			<Dialog open={openM} onClose={openModal} scroll='paper'>
-				<DialogTitle>Current Command Queue</DialogTitle>
+				<DialogTitle>
+					{openH === true ? 'Command History' : 'Current Command Queue'}
+				</DialogTitle>
 				<DialogContent dividers={true}>
-					{/* <DialogContentText tabIndex={-1}> */}
 					<List>
-						{mach.tasks === undefined ||
-						mach.tasks === null ||
-						mach.tasks.length === 0 ? (
+						{openH === true ? (
+							hist.map((h: any) => {
+								<h1>h.cmd_output</h1>;
+							})
+						) : mach.tasks === undefined ||
+						  mach.tasks === null ||
+						  mach.tasks.length === 0 ? (
 							<>
 								<h1>Queue is Empty</h1>
 							</>
@@ -140,10 +129,13 @@ export default function CardView({
 							))
 						)}
 					</List>
-					{/* </DialogContentText> */}
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={openModal}>Close</Button>
+					<Button
+						onClick={openH === true ? () => openHistory() : () => openModal()}
+					>
+						Close
+					</Button>
 				</DialogActions>
 			</Dialog>
 
@@ -222,6 +214,9 @@ export default function CardView({
 					>
 						<Button variant='outlined' onClick={() => openModal()}>
 							Command Queue
+						</Button>
+						<Button variant='outlined' onClick={() => openHistory()}>
+							History
 						</Button>
 						<Button
 							variant='outlined'
