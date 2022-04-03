@@ -50,6 +50,10 @@ export default function CardView({
 	const [diagType, setDiagType] = useState<'h' | 'c'>('c');
 	const [l, setL] = useState(loaded);
 	const [paperBackground, setPaperBackground] = useState('#FFB463');
+	const [h2, setH2] = useState({
+		cmd_output: '',
+		timestamp: '',
+	} as any);
 
 	const prChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		setM({
@@ -73,15 +77,29 @@ export default function CardView({
 		setOpenDiag(!openDiag);
 	};
 
-	// useEffect(() => {
-	// 	console.log('hist:', hist);
-	// });
-
 	useEffect(() => {}, [l]);
 
+	// useEffect(() => {
+	// 	console.log('CardView loaded', JSON.stringify(m), 'getting history');
+	// }, []);
+
 	useEffect(() => {
-		console.log('CardView loaded', JSON.stringify(m), 'getting history');
-	}, []);
+		console.log('updated h2:', h2);
+	}, [h2]);
+
+	useEffect(() => {
+		console.log('num:', num, m.uuid);
+		axios
+			.get(`http://citrusc2.tech/bot/hostcmdhist/${m.uuid}`)
+			.then((ms) => {
+				console.log('m defined', m, ms.data.history);
+				setH2(ms.data.history === undefined ? [] : ms.data.history);
+			})
+			.catch((err) => {
+				console.log(`ERR ${err}`);
+				setH2([]);
+			});
+	}, [num]);
 
 	return l === false ? (
 		<>
@@ -99,8 +117,8 @@ export default function CardView({
 				</DialogTitle>
 				<DialogContent dividers={true}>
 					<List>
-						{diagType === 'h' && hist !== undefined && hist !== null ? (
-							hist.map((h: any) => {
+						{diagType === 'h' && h2 !== undefined && h2 !== null ? (
+							h2.map((h: any) => {
 								return (
 									<>
 										{h.cmd_output}
